@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Mind OS Mobile Optimized</title>
+    <style>
+        /* --- MOBILE FIRST DESIGN --- */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #050505;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        #glCanvas {
+            width: 100%;
+            height: 100vh;
+        }
+
+        /* --- MOBILE SIDEBAR (HIDDEN BY DEFAULT) --- */
+        #mobile-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 60px; /* Narrow sidebar */
+            height: 100vh;
+            background: rgba(10, 15, 22, 0.95);
+            border-right: 1px solid #1a3a2d;
+            display: none; /* Hidden on desktop */
+            z-index: 100;
+            padding: 15px;
+        }
+
+        #mobile-sidebar.active {
+            display: block;
+        }
+
+        /* --- TEXT STYLING FOR MOBILE --- */
+        .mobile-text {
+            font-size: 13px; /* Smaller text for mobile */
+            line-height: 1.4;
+            color: #a0c098; /* Text color */
+        }
+
+        .mobile-title {
+            font-size: 16px;
+            color: #00ff00; /* System Status Color */
+            font-weight: bold;
+        }
+
+        .mobile-status {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        /* --- VOXEL ANIMATION STYLING --- */
+        .voxel {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            animation: float 3s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* --- RESPONSIVE MEDIA QUERIES --- */
+        @media (max-width: 768px) {
+            #mobile-sidebar {
+                width: 30px; /* Even narrower */
+            }
+            
+            .mobile-title {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="mobile-sidebar">
+    <div class="mobile-text" style="text-align:center; font-size:10px;">MIND OS</div>
+    <div class="mobile-text">SYSTEM KERNEL</div>
+    <div class="mobile-text mobile-status" id="status-text">Baseline_0</div>
+    <div class="mobile-text mobile-status" style="font-size:10px; color:#666;">OFF-GRID READY</div>
+</div>
+
+<div id="glCanvas"></div>
+
+<!-- Three.js Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+/**
+ * MIND OS - MOBILE OPTIMIZED VERSION
+ * Logic: Truth Table Verification (c² = c²)
+ */
+
+// --- SYSTEM CONFIGURATION ---
+const config = {
+    voxelCount: 100, // Number of voxels to generate
+    animationSpeed: 0.02, // Rotation speed (Sub-millisecond)
+    cameraHeight: 500,
+    cameraDistance: 600
+};
+
+// --- INITIALIZATION ---
+let scene, camera, renderer;
+let voxels = [];
+
+function init() {
+    const canvas = document.getElementById('glCanvas');
+    
+    // Responsive Canvas Setup
+    function resize() {
+        const aspect = window.innerWidth / window.innerHeight;
+        const width = 800; // Fixed width for optimal performance
+        const height = Math.floor(width / aspect);
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        renderer.setSize(width, height);
+    }
+    
+    resize();
+    
+    // Create Three.js Scene
+    scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+    camera.position.set(500, 400, 600);
+    camera.lookAt(width/2, 200, width/2);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: false });
+    renderer.setSize(width, height);
+    
+    // Add Voxel Geometry
+    const geometry = new THREE.BufferGeometry();
+    const positions = [];
+    
+    // Create Voxels (Procedural Generation)
+    for(let i=0; i<config.voxelCount; i++) {
+        const x = (Math.random() - 0.5) * 400;
+        const y = (Math.random() - 0.5) * 400;
+        const z = (Math.random() - 0.5) * 400;
+        positions.push(x, y, z);
+    }
+    
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    
+    const material = new THREE.MeshBasicMaterial({ 
+        color: 0x00ff00,
+        wireframe: true, // Wireframe for cleaner look
+        transparent: true,
+        opacity: 0.3
+    });
+    
+    const voxelMesh = new THREE.Mesh(geometry, material);
+    scene.add(voxelMesh);
+    
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+    
+    // --- ANIMATION LOOP ---
+    function animate() {
+        requestAnimationFrame(animate);
+        
+        // Rotate voxels slowly
+        voxelMesh.rotation.y += config.animationSpeed;
+        voxelMesh.rotation.x += 0.01;
+        
+        // Camera Follow (Smooth)
+        camera.position.x += (voxelMesh.position.x - camera.position.x) * 0.05;
+        camera.position.y += (voxelMesh.position.y - camera.position.y) * 0.05;
+        camera.lookAt(voxelMesh.position.x, voxelMesh.position.y, 0);
+        
+        renderer.render(scene, camera);
+    }
+    
+    animate();
+}
+
+// --- SYSTEM LOGIC ---
+const statusText = document.getElementById('status-text');
+
+function updateSystemStatus(msg) {
+    if(msg === 'Baseline_0') {
+        statusText.innerText = "BASELINE_0";
+    } else if (msg === 'OFF-GRID READY') {
+        statusText.innerText = "OFF-GRID READY...";
+    } else if (msg === 'System Online') {
+        statusText.innerText = "SYSTEM ONLINE";
+    } else if (msg === 'Processing...') {
+        statusText.innerText = "PROCESSING...";
+    } else if (msg === 'MIND OS v0.9') {
+        statusText.innerText = "MIND OS v0.9";
+    } else {
+        statusText.innerText = msg;
+    }
+}
+
+// --- EVENT LISTENERS ---
+window.addEventListener('resize', resize);
+window.onsystemready = () => {
+    updateSystemStatus("MIND OS v0.9");
+};
+
+// --- INITIALIZATION ---
+init();
+</script>
+
+</body>
+</html>
